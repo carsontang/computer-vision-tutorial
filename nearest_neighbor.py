@@ -8,11 +8,18 @@ class NearestNeighbor(object):
     self.Xtr = X
     self.ytr = y
 
-  def predict(self, X):
+  def predict_euclidean(self, X):
+    return self.predict(X, NearestNeighbor.euclidean)
+
+  def predict_manhattan(self, X):
+    return self.predict(X, NearestNeighbor.manhattan)
+
+  def predict(self, X, dist):
     num_test = X.shape[0]
     Ypred = np.zeros(num_test, dtype = self.ytr.dtype)
 
     for i in xrange(num_test):
+      print "comparing ", i
       # Xtr is a matrix of 5,000 pictures, each picture represented by 3072 numbers
       # X[i, :] is the ith picture in the test set
       # np.abs(Xtr - X[i, :]) essentially means compare every picture
@@ -30,8 +37,17 @@ class NearestNeighbor(object):
       # np.sum(result, axis = 1) says add all the colums in a single row together
       # essentially, we're looking for the picture whose distance from the test picture
       # is smallest.
-      distances = np.sum(np.abs(self.Xtr - X[i, :]), axis = 1)
+      # distances = np.sum(np.abs(self.Xtr - X[i, :]), axis = 1)
+      distances = dist(self.Xtr, X[i, :])
       min_index = np.argmin(distances)
       Ypred[i] = self.ytr[min_index]
 
     return Ypred
+
+  @staticmethod
+  def manhattan(Xtr, Xtest_instance):
+    return np.sum(np.abs(Xtr - Xtest_instance), axis = 1)
+
+  @staticmethod
+  def euclidean(Xtr, Xtest_instance):
+    return np.sqrt(np.sum(np.square(Xtr - Xtest_instance), axis = 1))
